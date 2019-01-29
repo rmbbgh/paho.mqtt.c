@@ -3494,7 +3494,7 @@ static void MQTTAsync_retry(void)
 
 	FUNC_ENTRY;
 	time(&(now));
-	if (difftime(now, last) > retryLoopInterval)
+	if (difftime(now, last) >= retryLoopInterval)
 	{
 		time(&(last));
 		MQTTProtocol_keepalive(now);
