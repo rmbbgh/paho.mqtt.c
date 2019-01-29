@@ -15,6 +15,10 @@
 *******************************************************************/
 
 #include "MQTTClient.h"
+#include "Clients.h"
+#include "MQTTPacket.h"
+#include "Thread.h"
+#include "sync_client_test.h"
 #include <string.h>
 #include <stdlib.h>
 
@@ -630,50 +634,6 @@ int test6_socket_close(int socket)
 	return rc;
 }
 
-typedef struct
-{
-	int socket;
-	time_t lastContact;
-#if defined(OPENSSL)
-	SSL* ssl;
-	SSL_CTX* ctx;
-#endif
-} networkHandles;
-
-
-typedef struct
-{
-	char* clientID;					/**< the string id of the client */
-	char* username;					/**< MQTT v3.1 user name */
-	char* password;					/**< MQTT v3.1 password */
-	unsigned int cleansession : 1;	/**< MQTT clean session flag */
-	unsigned int connected : 1;		/**< whether it is currently connected */
-	unsigned int good : 1; 			/**< if we have an error on the socket we turn this off */
-	unsigned int ping_outstanding : 1;
-	int connect_state : 4;
-	networkHandles net;
-/* ... */
-} Clients;
-
-
-typedef struct
-{
-	char* serverURI;
-	Clients* c;
-	MQTTClient_connectionLost* cl;
-	MQTTClient_messageArrived* ma;
-	MQTTClient_deliveryComplete* dc;
-	void* context;
-
-	int connect_sem;
-	int rc; /* getsockopt return code in connect */
-	int connack_sem;
-	int suback_sem;
-	int unsuback_sem;
-	void* pack;
-} MQTTClients;
-
- 
 int will_message_test(void)
 {
 	int i, rc, count = 0;

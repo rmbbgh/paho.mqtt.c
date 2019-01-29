@@ -1480,49 +1480,6 @@ exit:
 	return failures;
 }
 
-typedef struct
-{
-	char* clientID;					/**< the string id of the client */
-	char* username;					/**< MQTT v3.1 user name */
-	char* password;					/**< MQTT v3.1 password */
-	unsigned int cleansession : 1;			/**< MQTT clean session flag */
-	unsigned int connected : 1;			/**< whether it is currently connected */
-	unsigned int good : 1; 			/**< if we have an error on the socket we turn this off */
-	unsigned int ping_outstanding : 1;
-	unsigned int connect_state : 2;
-	int socket;
-	int msgID;
-	int keepAliveInterval;
-	int retryInterval;
-	int maxInflightMessages;
-	time_t lastContact;
-	void* will;
-	void* inboundMsgs;
-	void* outboundMsgs;				/**< in flight */
-	void* messageQueue;
-	void* phandle;  /* the persistence handle */
-	MQTTClient_persistence* persistence; /* a persistence implementation */
-	int connectOptionsVersion;
-} Clients;
-
-typedef struct
-{
-	char* serverURI;
-	Clients* c;
-	MQTTClient_connectionLost* cl;
-	MQTTClient_messageArrived* ma;
-	MQTTClient_deliveryComplete* dc;
-	void* context;
-
-	int connect_sem;
-	int rc; /* getsockopt return code in connect */
-	int connack_sem;
-	int suback_sem;
-	int unsuback_sem;
-	void* pack;
-} MQTTClients;
-
-
 int main(int argc, char** argv)
 {
 	int* numtests = &tests;

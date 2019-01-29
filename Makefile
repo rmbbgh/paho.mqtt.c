@@ -152,8 +152,8 @@ PAHO_C_SUB_TARGET = ${blddir}/samples/${PAHO_C_SUB_NAME}
 PAHO_CS_PUB_TARGET = ${blddir}/samples/${PAHO_CS_PUB_NAME}
 PAHO_CS_SUB_TARGET = ${blddir}/samples/${PAHO_CS_SUB_NAME}
 
-CCFLAGS_SO = -g -fPIC $(CFLAGS) -Os -Wall -fvisibility=hidden -I$(blddir_work) 
-FLAGS_EXE = $(LDFLAGS) -I ${srcdir} -lpthread -L ${blddir}
+CCFLAGS_SO = -g -fPIC $(CFLAGS) -Os -Wall -fvisibility=hidden -I$(blddir_work)
+FLAGS_EXE = $(LDFLAGS) -I ${srcdir} -I $(blddir_work) -lpthread -L ${blddir}
 FLAGS_EXES = $(LDFLAGS) -I ${srcdir} ${START_GROUP} -lpthread -lssl -lcrypto ${END_GROUP} -L ${blddir}
 
 LDCONFIG ?= /sbin/ldconfig
@@ -214,7 +214,7 @@ mkdir:
 	-mkdir -p ${blddir}/test
 	echo OSTYPE is $(OSTYPE)
 
-${SYNC_TESTS}: ${blddir}/test/%: ${srcdir}/../test/%.c $(MQTTLIB_C_TARGET)
+${SYNC_TESTS}: ${blddir}/test/%: ${srcdir}/../test/%.c $(MQTTLIB_C_TARGET) $(blddir_work)/sync_client_test.h
 	${CC} -DNOSTACKTRACE -DNOLOG_MESSAGES $(srcdir)/Thread.c -g -o $@ $< -l${MQTTLIB_C} ${FLAGS_EXE}
 
 ${SYNC_SSL_TESTS}: ${blddir}/test/%: ${srcdir}/../test/%.c $(MQTTLIB_CS_TARGET)
@@ -240,6 +240,12 @@ ${ASYNC_UTILS}: ${blddir}/samples/%: ${srcdir}/samples/%.c ${srcdir}/samples/pub
 
 $(blddir_work)/VersionInfo.h: $(srcdir)/VersionInfo.h.in
 	$(SED_COMMAND) $< > $@
+
+$(blddir_work)/sync_client_test.h: $(srcdir)/MQTTClient.c
+	awk 'BEGIN { in_struct=0; } \
+	    /^(typedef )?struct( |$$).*/ { in_struct=1; } \
+	    /^}/ && in_struct { print; in_struct=0; } \
+	    in_struct == 1 { print; }' $< >$@
 
 ${MQTTLIB_C_TARGET}: ${SOURCE_FILES_C} ${HEADERS_C} $(blddir_work)/VersionInfo.h
 	${CC} ${CCFLAGS_SO} -o $@ ${SOURCE_FILES_C} ${LDFLAGS_C}
